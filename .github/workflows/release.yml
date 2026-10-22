@@ -28,6 +28,7 @@ jobs:
           pyinstaller --onefile --name ggb
           --add-data "static;static"
           --collect-submodules uvicorn
+          --icon assets/ggb.ico
           server.py
 
       - name: Smoke test
