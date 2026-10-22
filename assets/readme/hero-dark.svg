@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400" font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif" role="img" aria-label="가계부 ggb: 이번 달 고정지출을 체크하고 아직 나갈 돈을 한눈에">
+  <style>
+  .rise { animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
+  .d1 { animation-delay: .15s; } .d2 { animation-delay: .3s; } .d3 { animation-delay: .45s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+  .ink { stroke-dasharray: 1; animation: draw .8s cubic-bezier(.2,.8,.2,1) both; }
+  .ink2 { animation-delay: .2s; } .ink3 { animation-delay: .4s; }
+  @keyframes draw { from { stroke-dashoffset: 1; } }
+  .loop { animation-duration: 9s; animation-iteration-count: infinite; animation-timing-function: ease; }
+  .num { opacity: 0; } .n0 { opacity: 1; }
+  .bar { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.39); animation-name: bar;
+          animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+  @keyframes bar { 0%, 20% { transform: scaleX(0.39); } 25%, 34% { transform: scaleX(0.77); }
+                    39%, 48% { transform: scaleX(0.93); } 53%, 93% { transform: scaleX(1.0); }
+                    98%, 100% { transform: scaleX(0.39); } }
+  .chk { opacity: 0; transform-box: fill-box; transform-origin: center; }
+  .tick { stroke-dasharray: 1; stroke-dashoffset: 1; }
+  .strike { transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0); }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  .n0 { animation-name: n0; } @keyframes n0 { 0%, 21% { opacity: 1; } 23%, 96% { opacity: 0; } 98%, 100% { opacity: 1; } }
+  .n1 { animation-name: n1; } @keyframes n1 { 0%, 21% { opacity: 0; } 23%, 35% { opacity: 1; } 37%, 100% { opacity: 0; } }
+  .n2 { animation-name: n2; } @keyframes n2 { 0%, 35% { opacity: 0; } 37%, 49% { opacity: 1; } 51%, 100% { opacity: 0; } }
+  .n3 { animation-name: n3; } @keyframes n3 { 0%, 49% { opacity: 0; } 51%, 93% { opacity: 1; } 95%, 100% { opacity: 0; } }
+  .k0 .chk { animation-name: chk0; animation-timing-function: cubic-bezier(.2,.9,.3,1.4); }
+  @keyframes chk0 { 0%, 21% { opacity: 0; transform: scale(.4); } 24% { opacity: 1; transform: scale(1.15); }
+                      26%, 93% { opacity: 1; transform: scale(1); } 97%, 100% { opacity: 0; transform: scale(1); } }
+  .k0 .tick { animation-name: tick0; }
+  @keyframes tick0 { 0%, 23% { stroke-dashoffset: 1; } 26%, 93% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 1; } }
+  .k0 .strike { animation-name: strike0; }
+  @keyframes strike0 { 0%, 22% { transform: scaleX(0); } 26%, 93% { transform: scaleX(1); } 97%, 100% { transform: scaleX(0); } }
+  .k0 .face { animation-name: face0; }
+  @keyframes face0 { 0%, 22% { fill: #1e232c; } 25%, 93% { fill: #12151b; } 97%, 100% { fill: #1e232c; } }
+  .k0 .txt { animation-name: txt0; }
+  @keyframes txt0 { 0%, 22% { opacity: 1; } 25%, 93% { opacity: .5; } 97%, 100% { opacity: 1; } }
+  .k1 .chk { animation-name: chk1; animation-timing-function: cubic-bezier(.2,.9,.3,1.4); }
+  @keyframes chk1 { 0%, 35% { opacity: 0; transform: scale(.4); } 38% { opacity: 1; transform: scale(1.15); }
+                      40%, 93% { opacity: 1; transform: scale(1); } 97%, 100% { opacity: 0; transform: scale(1); } }
+  .k1 .tick { animation-name: tick1; }
+  @keyframes tick1 { 0%, 37% { stroke-dashoffset: 1; } 40%, 93% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 1; } }
+  .k1 .strike { animation-name: strike1; }
+  @keyframes strike1 { 0%, 36% { transform: scaleX(0); } 40%, 93% { transform: scaleX(1); } 97%, 100% { transform: scaleX(0); } }
+  .k1 .face { animation-name: face1; }
+  @keyframes face1 { 0%, 36% { fill: #1e232c; } 39%, 93% { fill: #12151b; } 97%, 100% { fill: #1e232c; } }
+  .k1 .txt { animation-name: txt1; }
+  @keyframes txt1 { 0%, 36% { opacity: 1; } 39%, 93% { opacity: .5; } 97%, 100% { opacity: 1; } }
+  .k2 .chk { animation-name: chk2; animation-timing-function: cubic-bezier(.2,.9,.3,1.4); }
+  @keyframes chk2 { 0%, 49% { opacity: 0; transform: scale(.4); } 52% { opacity: 1; transform: scale(1.15); }
+                      54%, 93% { opacity: 1; transform: scale(1); } 97%, 100% { opacity: 0; transform: scale(1); } }
+  .k2 .tick { animation-name: tick2; }
+  @keyframes tick2 { 0%, 51% { stroke-dashoffset: 1; } 54%, 93% { stroke-dashoffset: 0; } 97%, 100% { stroke-dashoffset: 1; } }
+  .k2 .strike { animation-name: strike2; }
+  @keyframes strike2 { 0%, 50% { transform: scaleX(0); } 54%, 93% { transform: scaleX(1); } 97%, 100% { transform: scaleX(0); } }
+  .k2 .face { animation-name: face2; }
+  @keyframes face2 { 0%, 50% { fill: #1e232c; } 53%, 93% { fill: #12151b; } 97%, 100% { fill: #1e232c; } }
+  .k2 .txt { animation-name: txt2; }
+  @keyframes txt2 { 0%, 50% { opacity: 1; } 53%, 93% { opacity: .5; } 97%, 100% { opacity: 1; } }
+  </style>
+  <rect width="1200" height="400" rx="28" fill="#0e1116"/>
+
+  <g class="rise">
+    <rect x="64" y="104" width="136" height="136" rx="38" fill="#1e2440"/>
+    <g transform="translate(64 104) scale(2.125)" fill="none" stroke="#8fa0ff" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round">
+      <path class="ink" d="M10.2 21H18.2V43" pathLength="1"/>
+      <path class="ink ink2" d="M27.2 21H34.7V43" pathLength="1"/>
+      <path class="ink ink3" d="M43.7 21V43H53.8V21M43.7 32H53.8" pathLength="1"/>
+    </g>
+  </g>
+  <g class="rise d1">
+    <text x="228" y="172" font-size="60" font-weight="800" letter-spacing="-2.4" fill="#eef1f6">가계부<tspan font-family="Outfit, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="600" letter-spacing="1" fill="#8c95a3" dx="14">ggb</tspan></text>
+  </g>
+  <g class="rise d2">
+    <text x="228" y="220" font-size="20" font-weight="500" fill="#a9b1be">이번 달 고정지출을 체크하고,</text>
+    <text x="228" y="252" font-size="20" font-weight="500" fill="#a9b1be">아직 나갈 돈을 한눈에.</text>
+  </g>
+  <g class="rise d3">
+      <rect x="228" y="288" width="92" height="32" rx="16" fill="#171b22" stroke="#2a303b"/>
+      <text x="274.0" y="309" text-anchor="middle" font-size="13" font-weight="600" fill="#a9b1be">로컬 실행</text>
+      <rect x="328" y="288" width="84" height="32" rx="16" fill="#171b22" stroke="#2a303b"/>
+      <text x="370.0" y="309" text-anchor="middle" font-size="13" font-weight="600" fill="#a9b1be">다크모드</text>
+      <rect x="420" y="288" width="108" height="32" rx="16" fill="#171b22" stroke="#2a303b"/>
+      <text x="474.0" y="309" text-anchor="middle" font-size="13" font-weight="600" fill="#a9b1be">MIT 라이선스</text>
+  </g>
+
+  <g class="rise d2">
+    <rect x="644" y="60" width="492" height="300" rx="26" fill="#171b22" stroke="#2a303b"/>
+    <text x="676" y="112" font-size="16" font-weight="600" fill="#a9b1be">아직 나갈 돈</text>
+    <text class="num n0 loop" x="676" y="194" font-family="Outfit, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="-2"
+          fill="#eef1f6">73<tspan font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif" font-size="22" font-weight="700" fill="#a9b1be" dx="8" letter-spacing="0">만원</tspan></text>
+    <text class="num n1 loop" x="676" y="194" font-family="Outfit, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="-2"
+          fill="#eef1f6">28<tspan font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif" font-size="22" font-weight="700" fill="#a9b1be" dx="8" letter-spacing="0">만원</tspan></text>
+    <text class="num n2 loop" x="676" y="194" font-family="Outfit, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="-2"
+          fill="#eef1f6">8<tspan font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif" font-size="22" font-weight="700" fill="#a9b1be" dx="8" letter-spacing="0">만원</tspan></text>
+    <text class="num n3 loop" x="676" y="194" font-family="Outfit, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-size="64" font-weight="700" letter-spacing="-2"
+          fill="#45dba6">0<tspan font-family="Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif" font-size="22" font-weight="700" fill="#a9b1be" dx="8" letter-spacing="0">만원</tspan></text>
+    <rect x="676" y="214" width="424" height="10" rx="5" fill="#262c37"/>
+    <rect class="bar loop" x="676" y="214" width="424" height="10" rx="5" fill="#4c66ff"/>
+    <g class="k0">
+      <rect class="face loop" x="676" y="244" width="133" height="96" rx="16" fill="#1e232c"/>
+      <g class="txt loop">
+        <rect x="690" y="261" width="8" height="8" rx="2.5" fill="#c98500"/>
+        <text x="704" y="269" font-size="12" font-weight="600" fill="#8c95a3">카드</text>
+        <text x="690" y="302" font-size="15" font-weight="700" fill="#eef1f6">카드값</text>
+        <rect class="strike loop" x="690" y="296" width="45" height="2" rx="1" fill="#8c95a3"/>
+        <text x="690" y="328" font-size="19" font-weight="800" fill="#eef1f6">45<tspan font-size="11" font-weight="600" fill="#8c95a3" dx="3">만원</tspan></text>
+      </g>
+      <circle cx="786" cy="266" r="10" fill="none" stroke="#3a4250" stroke-width="2"/>
+      <g class="chk loop">
+        <circle cx="786" cy="266" r="11" fill="#2bc48f"/>
+      </g>
+      <path class="tick loop" d="M781 266.5l3.4 3.4 6-6.6" pathLength="1" fill="none" stroke="#0e1116" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g class="k1">
+      <rect class="face loop" x="821" y="244" width="133" height="96" rx="16" fill="#1e232c"/>
+      <g class="txt loop">
+        <rect x="835" y="261" width="8" height="8" rx="2.5" fill="#199e70"/>
+        <text x="849" y="269" font-size="12" font-weight="600" fill="#8c95a3">저축·투자</text>
+        <text x="835" y="302" font-size="15" font-weight="700" fill="#eef1f6">ETF 적립</text>
+        <rect class="strike loop" x="835" y="296" width="61" height="2" rx="1" fill="#8c95a3"/>
+        <text x="835" y="328" font-size="19" font-weight="800" fill="#eef1f6">20<tspan font-size="11" font-weight="600" fill="#8c95a3" dx="3">만원</tspan></text>
+      </g>
+      <circle cx="931" cy="266" r="10" fill="none" stroke="#3a4250" stroke-width="2"/>
+      <g class="chk loop">
+        <circle cx="931" cy="266" r="11" fill="#2bc48f"/>
+      </g>
+      <path class="tick loop" d="M926 266.5l3.4 3.4 6-6.6" pathLength="1" fill="none" stroke="#0e1116" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <g class="k2">
+      <rect class="face loop" x="966" y="244" width="133" height="96" rx="16" fill="#1e232c"/>
+      <g class="txt loop">
+        <rect x="980" y="261" width="8" height="8" rx="2.5" fill="#d55181"/>
+        <text x="994" y="269" font-size="12" font-weight="600" fill="#8c95a3">기타</text>
+        <text x="980" y="302" font-size="15" font-weight="700" fill="#eef1f6">보험</text>
+        <rect class="strike loop" x="980" y="296" width="30" height="2" rx="1" fill="#8c95a3"/>
+        <text x="980" y="328" font-size="19" font-weight="800" fill="#eef1f6">8<tspan font-size="11" font-weight="600" fill="#8c95a3" dx="3">만원</tspan></text>
+      </g>
+      <circle cx="1076" cy="266" r="10" fill="none" stroke="#3a4250" stroke-width="2"/>
+      <g class="chk loop">
+        <circle cx="1076" cy="266" r="11" fill="#2bc48f"/>
+      </g>
+      <path class="tick loop" d="M1071 266.5l3.4 3.4 6-6.6" pathLength="1" fill="none" stroke="#0e1116" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>
