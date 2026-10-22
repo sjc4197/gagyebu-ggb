@@ -1,0 +1,28 @@
+# 개인 데이터 (절대 커밋하지 않음)
+data/
+*.db
+*.db-journal
+tools/import_k.py
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# 편집기 / 도구
+.vscode/
+.idea/
+.claude/settings.local.json
+Thumbs.db
+
+# Claude Code 작업물 (공개하지 않음)
+REQUIREMENTS.md
+CLAUDE.md
+CLAUDE.local.md
+.claude/

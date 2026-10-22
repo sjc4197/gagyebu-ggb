@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>가계부</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%233182f6'/%3E%3Cpath d='M9 11l3.2 10L16 12l3.8 9L23 11' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <a class="brand" href="#/">
+        <span class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M9 11l3.2 10L16 12l3.8 9L23 11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        가계부
+      </a>
+      <nav class="main-nav">
+        <a href="#/" data-nav="home">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 8h14M7 2.5v3M13 2.5v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          월별 가계부
+        </a>
+        <a href="#/dashboard" data-nav="dash">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 16V10M8 16V5M12 16v-7M16 16V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          대시보드
+        </a>
+        <a href="#/blocks" data-nav="blocks">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="11" y="3" width="6" height="6" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="11" width="6" height="6" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="11" y="11" width="6" height="6" rx="1.8" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>
+          블럭 관리
+        </a>
+      </nav>
+      <a class="new-month-btn" href="#/new">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        새 달 만들기
+      </a>
+      <nav id="monthNav" class="month-nav"></nav>
+    </aside>
+    <main id="main"></main>
+  </div>
+  <dialog id="modal"></dialog>
+  <div id="toast" role="status"></div>
+  <script src="/static/dashboard.js"></script>
+  <script src="/static/blocks.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
