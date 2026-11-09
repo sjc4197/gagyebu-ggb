@@ -888,7 +888,7 @@ dialog[open] { animation: dlg .2s cubic-bezier(.2, .8, .2, 1); }
 .setup { padding: 22px; }
 .setup-row {
   display: grid;
-  grid-template-columns: 170px 170px 150px 150px 1fr;
+  grid-template-columns: 160px 160px 130px 130px 1fr 130px;
   gap: 14px;
   align-items: end;
 }
@@ -1112,7 +1112,7 @@ dialog[open] { animation: dlg .2s cubic-bezier(.2, .8, .2, 1); }
 
 .kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
 }
 .kpi { padding: 18px 20px; }
@@ -1339,4 +1339,82 @@ dialog[open] { animation: dlg .2s cubic-bezier(.2, .8, .2, 1); }
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
+}
+
+/* ------------------------------------------------------------ free money (여유금 사용) */
+
+.free-stat .stat-label svg { transition: transform .18s var(--ease-out); }
+.free-stat.open .stat-label svg { transform: rotate(180deg); color: var(--accent-text); }
+
+.free-panel { margin-top: 14px; padding: 22px 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+.fp-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 18px 32px; }
+.fp-left { flex: 1 1 320px; min-width: 0; }
+.fp-label { font-size: 14px; font-weight: 600; color: var(--text-2); }
+.fp-num { margin-top: 2px; font-family: var(--font-num); font-size: 38px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; color: var(--pos); }
+.fp-num.neg { color: var(--neg); }
+.fp-num small { margin-left: 4px; font-family: var(--font); font-size: 15px; font-weight: 600; color: var(--text-3); letter-spacing: 0; }
+.meter { margin-top: 14px; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--accent) 16%, var(--surface-3)); overflow: hidden; max-width: 420px; }
+.meter i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .45s var(--ease-out); }
+.meter.warn i { background: var(--c4); }
+.meter.full i { background: var(--neg); }
+.fp-formula { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 10px; font-size: 13px; color: var(--text-3); }
+.fp-formula b { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.fp-formula .op { color: var(--text-3); }
+.fp-formula span:last-child b { color: var(--text); }
+.fp-carry { flex: 0 0 220px; }
+
+.fw-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.fw {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  border: 1.5px solid transparent;
+  min-width: 0;
+}
+.fw.now { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--accent) 6%, var(--surface-2)); }
+.fw-head { display: flex; align-items: baseline; gap: 8px; }
+.fw-title { font-weight: 800; font-size: 15px; letter-spacing: -0.02em; }
+.fw-title small { margin-left: 4px; font-size: 11px; font-weight: 600; color: var(--text-3); }
+.fw-now { font-style: normal; font-size: 11px; font-weight: 700; color: var(--accent-text); background: var(--accent-soft); padding: 1px 7px; border-radius: 6px; }
+.fw-sum { margin-left: auto; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fw-sum.empty { color: var(--text-3); font-weight: 600; }
+.fw-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.fw-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 8px 6px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--surface);
+  text-align: left;
+  transition: background .12s;
+}
+.fw-item:hover { background: var(--surface-3); }
+.fw-item b { flex: none; font-weight: 800; font-variant-numeric: tabular-nums; min-width: 34px; }
+.fw-item span { flex: 1; min-width: 0; font-size: 13px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fw-item svg { flex: none; width: 13px; height: 13px; color: var(--text-3); opacity: 0; transition: opacity .12s; }
+.fw-item:hover svg, .fw-item:focus-visible svg { opacity: 1; }
+.fw-add { display: grid; grid-template-columns: 86px 1fr 32px; gap: 6px; align-items: center; margin-top: auto; }
+.fw-add .input { height: 36px; padding: 0 10px; font-size: 13px; border-radius: 10px; }
+.input-unit.sm .input { padding-right: 36px; }
+.input-unit.sm::after { font-size: 11px; right: 9px; }
+.fw-plus { width: 32px; height: 32px; color: var(--accent-text); background: var(--accent-soft); }
+.fw-plus:hover { background: color-mix(in srgb, var(--accent) 22%, var(--surface)); color: var(--accent-text); }
+
+.chart .cap-sub { font-weight: 600; fill: var(--text-3); }
+.cc-note { margin: 6px 0 0; font-size: 12px; color: var(--text-3); }
+
+@media (max-width: 1100px) {
+  .fw-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .setup-row { grid-template-columns: 1fr 1fr 1fr; }
+}
+@media (max-width: 700px) {
+  .fw-grid { grid-template-columns: 1fr; }
 }

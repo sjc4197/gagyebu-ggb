@@ -60,7 +60,19 @@ CREATE TABLE IF NOT EXISTS month_items (
     memo     TEXT    NOT NULL DEFAULT '',
     PRIMARY KEY (ym, block_id)
 );
+CREATE TABLE IF NOT EXISTS free_spend (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    ym         TEXT    NOT NULL REFERENCES months(ym) ON DELETE CASCADE,
+    week       INTEGER NOT NULL,
+    amount     REAL    NOT NULL,
+    memo       TEXT    NOT NULL DEFAULT '',
+    created_at TEXT    NOT NULL DEFAULT (datetime('now', 'localtime'))
+);
 """
+
+# 여유금 사용 주차: 1주 1~7일, 2주 8~14일, 3주 15~21일, 4주 22~말일
+WEEKS = 4
+WEEK_LABELS = ["1~7일", "8~14일", "15~21일", "22일~말일"]
 
 
 # ---------------------------------------------------------------- DB helpers
@@ -70,6 +82,10 @@ def init_db(path: Path | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(path) as conn:
         conn.executescript(SCHEMA)
+        # 예전 DB에 없는 열 추가 (이월금)
+        cols = {r[1] for r in conn.execute("PRAGMA table_info(months)")}
+        if "carryover" not in cols:
+            conn.execute("ALTER TABLE months ADD COLUMN carryover REAL NOT NULL DEFAULT 0")
         if not conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0]:
             conn.executemany(
                 "INSERT INTO categories (name, sort_order, builtin) VALUES (?, ?, 1)",
@@ -181,7 +197,7 @@ def insert_block(conn, name: str, category: str) -> int:
     return cur.lastrowid
 
 
-def summarize(month, items: list[dict], cats: list[str]) -> dict:
+def summarize(month, items: list[dict], cats: list[str], spends: list[dict]) -> dict:
     income = month["salary"] + month["extra_income"]
     total = sum(i["amount"] for i in items)
     remaining_items = [i for i in items if not i["paid"]]
@@ -191,6 +207,10 @@ def summarize(month, items: list[dict], cats: list[str]) -> dict:
         cat_total = sum(i["amount"] for i in items if i["category"] == cat)
         if cat_total:
             by_cat.append({"category": cat, "total": r2(cat_total)})
+    free = income - total
+    carryover = month["carryover"]
+    spent = sum(s["amount"] for s in spends)
+    by_week = [r2(sum(s["amount"] for s in spends if s["week"] == w)) for w in range(1, WEEKS + 1)]
     return {
         "income": r2(income),
         "total": r2(total),
@@ -198,9 +218,22 @@ def summarize(month, items: list[dict], cats: list[str]) -> dict:
         "remaining": r2(remaining),
         "remaining_count": len(remaining_items),
         "count": len(items),
-        "free": r2(income - total),
+        "free": r2(free),
         "by_category": by_cat,
+        # 여유금 사용
+        "carryover": r2(carryover),
+        "available": r2(free + carryover),     # 쓸 수 있는 돈 = 여유금 + 이월금
+        "spent": r2(spent),
+        "left": r2(free + carryover - spent),  # 남은 여유금
+        "spent_by_week": by_week,
     }
+
+
+def month_spends(conn, ym: str) -> list[dict]:
+    return [
+        {"id": r["id"], "week": r["week"], "amount": r["amount"], "memo": r["memo"]}
+        for r in conn.execute("SELECT * FROM free_spend WHERE ym = ? ORDER BY week, id", (ym,))
+    ]
 
 
 def month_detail(conn, ym: str) -> dict:
@@ -223,15 +256,19 @@ def month_detail(conn, ym: str) -> dict:
     ]
     prev = conn.execute("SELECT MAX(ym) FROM months WHERE ym < ?", (ym,)).fetchone()[0]
     nxt = conn.execute("SELECT MIN(ym) FROM months WHERE ym > ?", (ym,)).fetchone()[0]
+    spends = month_spends(conn, ym)
     return {
         "ym": ym,
         "salary": month["salary"],
         "extra_income": month["extra_income"],
         "extra_memo": month["extra_memo"],
+        "carryover": month["carryover"],
         "memo": month["memo"],
         "items": items,
         "pool": pool,
-        "summary": summarize(month, items, categories_of(conn)),
+        "spends": spends,
+        "week_labels": WEEK_LABELS,
+        "summary": summarize(month, items, categories_of(conn), spends),
         "prev": prev,
         "next": nxt,
     }
@@ -243,6 +280,19 @@ class MonthPatch(BaseModel):
     salary: float | None = None
     extra_income: float | None = None
     extra_memo: str | None = None
+    carryover: float | None = None
+    memo: str | None = None
+
+
+class SpendBody(BaseModel):
+    week: int
+    amount: float
+    memo: str = ""
+
+
+class SpendPatch(BaseModel):
+    week: int | None = None
+    amount: float | None = None
     memo: str | None = None
 
 
@@ -288,6 +338,7 @@ class NewMonth(BaseModel):
     salary: float = 0
     extra_income: float = 0
     extra_memo: str = ""
+    carryover: float = 0
     memo: str = ""
     items: list[NewItem] = []
 
@@ -400,16 +451,31 @@ def stats():
         ).fetchall()
         blocks = all_blocks(conn)
         cats = categories_of(conn)
+        spend_rows = conn.execute(
+            "SELECT ym, week, SUM(amount) AS total, COUNT(*) AS n FROM free_spend WHERE ym <= ? GROUP BY ym, week",
+            (until,),
+        ).fetchall()
     items_by_month: dict[str, dict[int, float]] = {}
     for r in rows:
         items_by_month.setdefault(r["ym"], {})[r["block_id"]] = r["amount"]
+    spend_by_month: dict[str, list[float]] = {}
+    spend_count: dict[str, int] = {}
+    for r in spend_rows:
+        weeks = spend_by_month.setdefault(r["ym"], [0.0] * WEEKS)
+        if 1 <= r["week"] <= WEEKS:
+            weeks[r["week"] - 1] = r2(r["total"])
+        spend_count[r["ym"]] = spend_count.get(r["ym"], 0) + r["n"]
     return {
         "until": until,
         "categories": cats,
+        "week_labels": WEEK_LABELS,
         "blocks": [{"id": b["id"], "name": b["name"], "category": b["category"]} for b in blocks],
         "months": [
             {"ym": m["ym"], "salary": m["salary"], "extra_income": m["extra_income"],
-             "extra_memo": m["extra_memo"], "items": items_by_month.get(m["ym"], {})}
+             "extra_memo": m["extra_memo"], "carryover": m["carryover"],
+             "items": items_by_month.get(m["ym"], {}),
+             "spend_by_week": spend_by_month.get(m["ym"], [0.0] * WEEKS),
+             "spend_count": spend_count.get(m["ym"], 0)}
             for m in months
         ],
     }
@@ -429,6 +495,61 @@ def patch_month(ym: str, body: MonthPatch):
         for k, v in fields.items():
             conn.execute(f"UPDATE months SET {k} = ? WHERE ym = ?", (v, ym))
         return month_detail(conn, ym)
+
+
+def check_week(week: int) -> int:
+    if not 1 <= week <= WEEKS:
+        raise HTTPException(400, f"주차는 1~{WEEKS} 사이여야 해요")
+    return week
+
+
+def check_amount(amount: float) -> float:
+    if amount <= 0:
+        raise HTTPException(400, "금액은 0보다 커야 해요")
+    return amount
+
+
+@app.post("/api/months/{ym}/spend")
+def add_spend(ym: str, body: SpendBody):
+    """여유금 사용 내역 추가."""
+    with db() as conn:
+        get_month_row(conn, ym)
+        conn.execute(
+            "INSERT INTO free_spend (ym, week, amount, memo) VALUES (?, ?, ?, ?)",
+            (ym, check_week(body.week), check_amount(body.amount), body.memo.strip()),
+        )
+        return month_detail(conn, ym)
+
+
+def get_spend_row(conn, spend_id: int):
+    row = conn.execute("SELECT * FROM free_spend WHERE id = ?", (spend_id,)).fetchone()
+    if not row:
+        raise HTTPException(404, "사용 내역이 없어요")
+    return row
+
+
+@app.patch("/api/spend/{spend_id}")
+def patch_spend(spend_id: int, body: SpendPatch):
+    fields = body.model_dump(exclude_unset=True, exclude_none=True)
+    if "week" in fields:
+        check_week(fields["week"])
+    if "amount" in fields:
+        check_amount(fields["amount"])
+    if "memo" in fields:
+        fields["memo"] = fields["memo"].strip()
+    with db() as conn:
+        row = get_spend_row(conn, spend_id)
+        for k, v in fields.items():
+            conn.execute(f"UPDATE free_spend SET {k} = ? WHERE id = ?", (v, spend_id))
+        return month_detail(conn, row["ym"])
+
+
+@app.delete("/api/spend/{spend_id}")
+def delete_spend(spend_id: int):
+    with db() as conn:
+        row = get_spend_row(conn, spend_id)
+        conn.execute("DELETE FROM free_spend WHERE id = ?", (spend_id,))
+        return month_detail(conn, row["ym"])
 
 
 @app.delete("/api/months/{ym}", status_code=204)
@@ -610,8 +731,8 @@ def create_month(body: NewMonth):
         if conn.execute("SELECT 1 FROM months WHERE ym = ?", (body.ym,)).fetchone():
             raise HTTPException(409, f"{body.ym} 달이 이미 있습니다")
         conn.execute(
-            "INSERT INTO months (ym, salary, extra_income, extra_memo, memo) VALUES (?, ?, ?, ?, ?)",
-            (body.ym, body.salary, body.extra_income, body.extra_memo, body.memo),
+            "INSERT INTO months (ym, salary, extra_income, extra_memo, carryover, memo) VALUES (?, ?, ?, ?, ?, ?)",
+            (body.ym, body.salary, body.extra_income, body.extra_memo, body.carryover, body.memo),
         )
         seen = set()
         for item in body.items:

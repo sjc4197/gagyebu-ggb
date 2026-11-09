@@ -35,7 +35,11 @@ function enrich(m) {
     total += amt;
   }
   const income = m.salary + m.extra_income;
-  return { ...m, income, total, cat, free: income - total, saving: cat[SAVING], rate: income ? cat[SAVING] / income : 0 };
+  const free = income - total;
+  const spent = sum(m.spend_by_week);
+  const available = free + m.carryover;           // 쓸 수 있는 돈 = 여유금 + 이월금
+  return { ...m, income, total, cat, free, saving: cat[SAVING], rate: income ? cat[SAVING] / income : 0,
+           spent, available, left: available - spent };
 }
 
 function rangeMonths() {
@@ -396,6 +400,73 @@ function drawSaveBlocks(el, ms) {
   });
 }
 
+function drawFreeUse(el, ms) {
+  const markers = ms.flatMap((m, i) => (m.carryover ? [{ s: 0, i }] : []));
+  lineChart(el, ms, {
+    label: "월별 여유금 사용",
+    series: [
+      { label: "쓸 수 있는 돈", color: "var(--ink-3)", values: ms.map((m) => m.available) },
+      { label: "사용", color: "var(--ink-1)", values: ms.map((m) => m.spent) },
+    ],
+    gap: [0, 1],
+    gapLabel: (v) => `남은 ${fmt(v)}`,
+    markers,
+    right: 124,
+    tip: (i) => {
+      const m = ms[i];
+      return tipTitle(ymLabel(m.ym))
+        + tipRow("var(--ink-3)", fmt(m.available), "쓸 수 있는 돈")
+        + tipRow("var(--ink-1)", fmt(m.spent), `사용${m.spend_count ? ` (${m.spend_count}건)` : ""}`)
+        + tipRow("", fmt(m.left), "남은 돈")
+        + (m.carryover ? tipNote(`여유금 ${fmt(m.free)} + 이월금 ${fmt(m.carryover)}`) : "");
+    },
+  });
+}
+
+/** 주차별 합계·월평균(사용 기록이 있는 달 기준)·비중 */
+function weekRows(ms) {
+  const labels = dash.week_labels;
+  const used = ms.filter((m) => m.spent > 0);
+  const totals = labels.map((_, i) => sum(ms.map((m) => m.spend_by_week[i])));
+  const all = sum(totals) || 1;
+  return labels.map((l, i) => ({
+    label: `${i + 1}주 (${l})`, total: r2d(totals[i]),
+    avg: used.length ? Math.round((totals[i] / used.length) * 10) / 10 : 0,
+    share: totals[i] / all,
+  }));
+}
+const r2d = (v) => Math.round(v * 100) / 100;
+
+function drawWeeks(el, ms) {
+  const rows = weekRows(ms);
+  const used = ms.filter((m) => m.spent > 0).length;
+  if (!used) { el.innerHTML = '<div class="empty">이 기간에는 여유금 사용 내역이 없어요</div>'; return; }
+  const W = Math.max(300, el.clientWidth);
+  const labelW = 118, right = 120, rowH = 40, barH = 18, top = 6;
+  const max = Math.max(...rows.map((r) => r.total)) || 1;
+  const len = (v) => (v / max) * (W - labelW - right);
+  let body = `<line class="axis" x1="${labelW}" x2="${labelW}" y1="${top}" y2="${top + rows.length * rowH}"/>`;
+  rows.forEach((r, k) => {
+    const y = top + k * rowH;
+    body += `<g class="hbar" data-k="${k}">
+      <rect class="row-hit" x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent"/>
+      <text class="tick name" x="${labelW - 10}" y="${y + rowH / 2 + 4}" text-anchor="end">${esc(r.label)}</text>
+      <path d="${barPath(labelW, y + (rowH - barH) / 2, len(r.total), barH)}" fill="var(--accent)"/>
+      <text class="cap" x="${labelW + len(r.total) + 8}" y="${y + rowH / 2 + 4}">${fmt(r.total)}<tspan class="cap-sub"> · ${pct(r.share)}</tspan></text>
+    </g>`;
+  });
+  const H = top * 2 + rows.length * rowH;
+  el.innerHTML = `<svg class="chart" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="주차별 여유금 사용">${body}</svg>
+    <p class="cc-note">사용 기록이 있는 ${used}개월 기준</p>`;
+  $$(".hbar", el).forEach((g) => {
+    const r = rows[+g.dataset.k];
+    g.addEventListener("pointermove", (e) => showTip(
+      tipTitle(r.label) + tipRow("var(--accent)", fmt(r.total), "기간 합계", "rect") + tipNote(`월평균 ${fmt(r.avg)} · 전체의 ${pct(r.share)}`),
+      e.clientX, e.clientY));
+    g.addEventListener("pointerleave", hideTip);
+  });
+}
+
 function drawHeat(el, ms) {
   const inRange = new Set(ms.flatMap((m) => Object.keys(m.items).map(Number)));
   const blocks = dash.blocks.filter((b) => inRange.has(b.id));
@@ -490,6 +561,18 @@ const CHARTS = {
     draw: drawSaveBlocks,
     table: (ms) => tableHtml(["항목", "기간 합계", "개월", "월평균"], savingBlocks(ms).map((r) => [r.name, r.total, `${r.months}개월`, Math.round(r.total / r.months * 10) / 10])),
   },
+  freeUse: {
+    title: "여유금 사용", sub: "쓸 수 있는 돈 = 여유금 + 이월금 · 두 선 사이 음영이 남은 돈 · 링 표시는 이월금이 있던 달 · 단위 만원",
+    legend: () => legendItem("var(--ink-3)", "쓸 수 있는 돈") + legendItem("var(--ink-1)", "사용") + `<span><i class="rk gap-key"></i>남은 돈</span>`,
+    draw: drawFreeUse,
+    table: (ms) => tableHtml(["월", "여유금", "이월금", "쓸 수 있는 돈", "사용", "남은 돈"],
+      ms.map((m) => [ymLabel(m.ym), m.free, m.carryover, m.available, m.spent, m.left])),
+  },
+  weeks: {
+    title: "주차별 사용 패턴", sub: "기간 동안 주차마다 쓴 여유금 합계 · 단위 만원",
+    draw: drawWeeks,
+    table: (ms) => tableHtml(["주차", "기간 합계", "월평균", "비중"], weekRows(ms).map((r) => [r.label, r.total, r.avg, pct(r.share)])),
+  },
   heat: {
     title: "블럭별 월 금액", sub: "색이 진할수록 큰 금액 · ▲▼는 전달 대비 금액이 바뀐 칸 · 분류 줄의 숫자는 그달 분류 소계",
     draw: drawHeat,
@@ -523,7 +606,14 @@ function kpiTiles(ms) {
       <div class="kpi-value">${value}${unit ? `<small>${unit}</small>` : ""}</div>
       <div class="kpi-sub">${sub}</div>
     </div>`;
+  const availSum = sum(ms.map((m) => m.available));
+  const spentSum = sum(ms.map((m) => m.spent));
+  const usedMonths = ms.filter((m) => m.spent > 0).length;
+  const useSub = usedMonths
+    ? `사용 ${fmt(spentSum)} · 남은 ${fmt(availSum - spentSum)} · ${usedMonths}개월 기록`
+    : "아직 사용 내역이 없어요";
   return tile(`${+last.ym.slice(5)}월 여유금`, fmt(last.free), "만원", deltaHtml)
+    + tile("여유금 사용률", pct(availSum > 0 ? spentSum / availSum : 0), "", useSub)
     + tile("평균 저축률", pct(totalIncome ? totalSaving / totalIncome : 0), "", `최고 ${ymLabel(best.ym)} ${pct(best.rate)}`)
     + tile("저축·투자 합계", fmt(totalSaving), "만원", `월평균 ${fmt1(totalSaving / ms.length)}만원`)
     + tile("월평균 고정지출", fmt1(sum(ms.map((m) => m.total)) / ms.length), "만원", `최대 ${ymLabel(maxTotal.ym)} ${fmt(maxTotal.total)}만원`);
@@ -583,6 +673,7 @@ function drawDashboard() {
       ${ms.length ? `
         <div class="kpis">${kpiTiles(ms)}</div>
         ${chartCard("income", ms)}
+        <div class="two">${chartCard("freeUse", ms)}${chartCard("weeks", ms)}</div>
         ${chartCard("cats", ms)}
         <div class="two">${chartCard("rate", ms)}${chartCard("living", ms)}</div>
         <div class="two">${chartCard("cum", ms)}${chartCard("saveBlocks", ms)}</div>

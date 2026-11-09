@@ -409,11 +409,7 @@ function renderMonth() {
             <span class="stat-num">${fmt(s.total)}<small>만원</small></span>
             <span class="stat-sub">블럭 ${s.count}개</span>
           </div>
-          <div class="stat">
-            <span class="stat-label">여유금</span>
-            <span class="stat-num ${s.free < 0 ? "neg" : "pos"}">${fmt(s.free)}<small>만원</small></span>
-            <span class="stat-sub">수입 − 고정지출</span>
-          </div>
+          ${freeStat(s)}
         </div>
       </div>
       <div class="hero-ring">
@@ -430,6 +426,8 @@ function renderMonth() {
         </div>
       </div>
     </section>
+
+    ${freeOpen ? freePanel(m) : ""}
 
     ${s.by_category.length ? `
     <section class="card breakdown">
@@ -586,7 +584,7 @@ const monthActions = {
         <div class="row2">
           <label class="field"><span>기타 수입</span>
             <div class="input-unit"><input class="input num" name="extra_income" type="number" step="any" value="${month.extra_income}"></div></label>
-          <label class="field"><span>기타 수입 메모</span><input class="input" name="extra_memo" value="${esc(month.extra_memo)}" placeholder="예: 소급분, 이월금"></label>
+          <label class="field"><span>기타 수입 메모</span><input class="input" name="extra_memo" value="${esc(month.extra_memo)}" placeholder="예: 소급분"></label>
         </div>`,
       actions: `
         <span class="spacer"></span>
@@ -655,6 +653,7 @@ async function loadDraft({ ym, source } = {}, keepNew = []) {
   d.blocks = d.blocks.map((b) => ({ ...b, key: "b" + b.id, isNew: false })).concat(keepNew);
   d.extra_income = 0;
   d.extra_memo = "";
+  d.carryover = 0;
   d.memo = "";
   draft = d;
   renderNew();
@@ -713,6 +712,8 @@ function renderNew() {
         <label class="field"><span>기타 수입</span>
           <div class="input-unit"><input class="input num" type="number" step="any" id="nExtra" value="${d.extra_income}"></div></label>
         <label class="field grow"><span>기타 수입 메모</span><input class="input" id="nExtraMemo" value="${esc(d.extra_memo)}" placeholder="예: 소급분"></label>
+        <label class="field"><span>이월금 <small>지난달 남은 돈</small></span>
+          <div class="input-unit"><input class="input num" type="number" step="any" id="nCarry" value="${d.carryover}"></div></label>
       </div>
       ${d.exists ? `<div class="warn">${ymLabel(d.ym)}은 이미 있어요. 다른 달을 고르세요.</div>` : ""}
     </section>
@@ -806,7 +807,7 @@ const newActions = {
     try {
       await api("POST", "/months", {
         ym: d.ym, salary: num(d.salary), extra_income: num(d.extra_income),
-        extra_memo: d.extra_memo.trim(), memo: d.memo.trim(), items,
+        extra_memo: d.extra_memo.trim(), carryover: num(d.carryover), memo: d.memo.trim(), items,
       });
     } catch (err) {
       return toast(err.message, "err");
@@ -824,7 +825,7 @@ main.addEventListener("click", async (e) => {
   const el = e.target.closest("[data-act]");
   if (!el) return;
   const act = el.dataset.act;
-  const handler = monthActions[act] || newActions[act] || dashActions[act] || blockActions[act];
+  const handler = monthActions[act] || newActions[act] || dashActions[act] || blockActions[act] || freeActions[act];
   if (!handler) return;
   e.preventDefault();
   const id = el.dataset.id ? Number(el.dataset.id) : el.dataset.key;
@@ -859,6 +860,7 @@ main.addEventListener("input", (e) => {
   } else if (t.id === "nSalary") draft.salary = t.value;
   else if (t.id === "nExtra") draft.extra_income = t.value;
   else if (t.id === "nExtraMemo") draft.extra_memo = t.value;
+  else if (t.id === "nCarry") draft.carryover = t.value;
   else if (t.id === "nMemo") draft.memo = t.value;
   else return;
   updateDraftStats();
@@ -868,6 +870,7 @@ main.addEventListener("change", async (e) => {
   const t = e.target;
   if (dashChange(t)) return;
   try {
+    if (await freeChange(t)) return;
     if (t.id === "monthMemo" && month) {
       month = await api("PATCH", `/months/${month.ym}`, { memo: t.value });
       toast("메모를 저장했어요");
